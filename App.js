@@ -1,6 +1,6 @@
-import React, { useRef } from "react";
+import React from "react";
 import { StyleSheet, View, Dimensions, TextInput } from "react-native";
-import Svg, { Path, Defs, LinearGradient, Stop } from "react-native-svg";
+import Svg, { Path, Defs, Pattern, Rect } from "react-native-svg";
 import { PanGestureHandler } from "react-native-gesture-handler";
 import Animated, {
    useAnimatedProps,
@@ -9,15 +9,14 @@ import Animated, {
    useAnimatedStyle,
    withSpring,
    useDerivedValue,
-   runOnJS,
 } from "react-native-reanimated";
 
 const AnimatedPath = Animated.createAnimatedComponent(Path);
-const AnimatedStop = Animated.createAnimatedComponent(Stop);
-const AnimatedGradient = Animated.createAnimatedComponent(LinearGradient);
+const AnimatedRect = Animated.createAnimatedComponent(Rect);
 const AnimatedText = Animated.createAnimatedComponent(TextInput);
 
-const { height, width } = Dimensions.get("screen");
+let { height, width } = Dimensions.get("screen");
+width = width - 40;
 const middleH = height / 2;
 const middleW = width / 2;
 const knobSize = 30;
@@ -27,9 +26,6 @@ Animated.addWhitelistedNativeProps({ text: true });
 export default function App() {
    const knobY = useSharedValue(middleH);
    const knobX = useSharedValue(middleW);
-
-   const stop1 = useRef(null);
-   const stop2 = useRef(null);
 
    const path = useDerivedValue(() => {
       const diffY = knobY.value - middleH;
@@ -74,68 +70,70 @@ export default function App() {
       },
    });
 
-   function setPercentage(percentage) {
-      console.log("stop1", stop1.current);
-      stop1.current?.setNativeProps({ offset: percentage + "%" });
-      stop2.current?.setNativeProps({ offset: percentage + "%" });
-   }
-
    const percentage = useDerivedValue(() => {
-      const percentage = ~~((knobX.value / width) * 100) + "";
-      runOnJS(setPercentage)(percentage);
-
-      return percentage;
+      return ~~((knobX.value / width) * 100);
    });
 
    const animatedText = useAnimatedProps(() => {
       return {
-         text: percentage.value,
+         text: percentage.value + "",
       };
    });
 
-   // const animatedOffset = useAnimatedProps(() => {
-   //    const offset = percentage.value + "%";
-   //    console.log("offset", offset);
-   //    return {
-   //       offset,
-   //    };
-   // });
+   const rect1Props = useAnimatedProps(() => {
+      return {
+         x: -width + (knobX.value - knobSize / 2),
+      };
+   });
+
+   const rect2Props = useAnimatedProps(() => {
+      return {
+         x: knobX.value + knobSize / 2,
+      };
+   });
 
    return (
       <View style={styles.container}>
-         <Svg style={{ height, width }}>
-            <Defs>
-               <LinearGradient id="colors" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <Stop offset="0%" stopColor="rgb(255,0,0)" />
-                  <Stop
-                     ref={stop1}
-                     offset={percentage.value + "%"}
-                     stopColor="rgb(255,0,0)"
-                  />
-                  <Stop
-                     ref={stop2}
-                     offset={percentage.value + "%"}
-                     stopColor="rgb(0,0,255)"
-                  />
-                  <Stop offset="100%" stopColor="rgb(0,0,255)" />
-               </LinearGradient>
-            </Defs>
-            <AnimatedPath
-               animatedProps={pathProps}
-               stroke="url(#colors)"
-               strokeWidth={3}
-            />
-         </Svg>
-         <PanGestureHandler {...{ onGestureEvent }}>
-            <Animated.View style={[styles.knob, animatedStyle]} />
-         </PanGestureHandler>
+         <View style={{ marginLeft: 20 }}>
+            <Svg style={{ height, width }}>
+               <Defs>
+                  <Pattern
+                     id="pattern"
+                     width={width}
+                     height={3}
+                     patternUnits="userSpaceOnUse"
+                  >
+                     <AnimatedRect
+                        animatedProps={rect1Props}
+                        width={width}
+                        height="3"
+                        fill="#545454"
+                     />
+                     <AnimatedRect
+                        animatedProps={rect2Props}
+                        width={width}
+                        height="3"
+                        fill="#e6e6e6"
+                     />
+                  </Pattern>
+               </Defs>
+               <AnimatedPath
+                  animatedProps={pathProps}
+                  stroke="url(#pattern)"
+                  strokeWidth={3}
+               />
+            </Svg>
+            <PanGestureHandler {...{ onGestureEvent }}>
+               <Animated.View style={[styles.knob, animatedStyle]} />
+            </PanGestureHandler>
+         </View>
 
          <AnimatedText
             underlineColorAndroid="transparent"
             style={styles.text}
             editable={false}
             animatedProps={animatedText}
-            value={percentage.value}
+            value={percentage.value + ""}
          />
       </View>
    );
@@ -151,7 +149,7 @@ const styles = StyleSheet.create({
    },
    knob: {
       position: "absolute",
-      backgroundColor: "cyan",
+      backgroundColor: "rgba(0,0,0,0.3)",
       borderWidth: 1,
       width: knobSize,
       height: knobSize,
