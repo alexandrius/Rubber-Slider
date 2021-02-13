@@ -1,12 +1,14 @@
 import React from "react";
-import { View, StyleSheet, Image } from "react-native";
+import { View, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { getStatusBarHeight } from "react-native-iphone-x-helper";
 
-export default function Header() {
+export default function Header({ onSettingsPress }) {
    return (
       <View style={styles.root}>
          <Image source={require("./assets/logo/logo.png")} />
-         <Image source={require("./assets/settings/settings.png")} />
+         <TouchableOpacity onPress={onSettingsPress}>
+            <Image source={require("./assets/settings/settings.png")} />
+         </TouchableOpacity>
       </View>
    );
 }

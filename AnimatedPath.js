@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { StyleSheet, View, Dimensions, Image } from "react-native";
+import { StyleSheet, View, Dimensions, Image, Text } from "react-native";
 import Svg, { Path, Defs, Pattern, Rect } from "react-native-svg";
 import { PanGestureHandler } from "react-native-gesture-handler";
 import Animated, {
@@ -20,7 +20,9 @@ const AnimatedRect = Animated.createAnimatedComponent(Rect);
 
 let { height, width } = Dimensions.get("screen");
 
-const padding = 20;
+const primaryColor = "#1C0452";
+
+const padding = 24;
 
 const availableWidth = width - padding * 2;
 const sliderY = height - height * 0.4;
@@ -28,8 +30,6 @@ const middleW = width / 2;
 const knobSize = 22;
 
 const pathHeight = 4;
-
-//More fixes required for quadratic path
 
 export default function App() {
    const [pathType, setPathType] = useState("linear");
@@ -53,6 +53,7 @@ export default function App() {
          } ${sliderY}`;
       }
 
+      //More fixes required for quadratic path
       const diffX = knobX.value - middleW;
       const diffY = knobY.value - sliderY;
 
@@ -107,8 +108,9 @@ export default function App() {
    const rect1Props = useAnimatedProps(() => {
       let x = knobX.value - availableWidth - knobSize / 2;
 
+      //TODO: find better workaround for color overlap bug
       if (knobX.value <= padding * 2) {
-         x += padding;
+         x += 20;
       }
 
       return {
@@ -119,8 +121,9 @@ export default function App() {
    const rect2Props = useAnimatedProps(() => {
       let x = knobX.value + knobSize / 2;
 
+      //TODO: find better workaround for color overlap bug
       if (knobX.value >= availableWidth - padding * 2) {
-         x -= padding;
+         x -= 20;
       }
       return {
          x,
@@ -140,13 +143,32 @@ export default function App() {
 
    return (
       <View style={styles.container}>
-         <View style={StyleSheet.absoluteFillObject}>
-            <Header />
+         <View
+            style={{
+               height: height - sliderY,
+               position: "absolute",
+               width: "100%",
+            }}
+         >
+            <Header
+               onSettingsPress={() => {
+                  if (pathType === "linear") setPathType("quadratic");
+                  else setPathType("linear");
+               }}
+            />
             <Animated.Image
                source={require("./assets/artist.png")}
                style={[styles.artist, imageStyle]}
             />
-            
+
+            <View style={styles.titleContainer}>
+               <Text style={styles.title}>Billie Eilish</Text>
+               <Text style={styles.subtitle}>
+                  Therefore I Am (Official Music)
+               </Text>
+            </View>
+
+            <AnimatedText style={styles.durationLabel} text={percentage} />
             <View style={styles.buttonContainer}>
                <Image
                   style={styles.button}
@@ -175,7 +197,7 @@ export default function App() {
                      animatedProps={rect1Props}
                      width={availableWidth}
                      height={pathHeight}
-                     fill="#1C0452"
+                     fill={primaryColor}
                   />
                   <AnimatedRect
                      animatedProps={rect2Props}
@@ -195,11 +217,6 @@ export default function App() {
          <PanGestureHandler {...{ onGestureEvent }}>
             <Animated.View style={[styles.knob, knobStyle]} />
          </PanGestureHandler>
-         {/* <AnimatedText
-            underlineColorAndroid="transparent"
-            style={styles.text}
-            text={percentage}
-         /> */}
       </View>
    );
 }
@@ -212,13 +229,34 @@ const styles = StyleSheet.create({
    knobContainer: {
       position: "absolute",
    },
+   titleContainer: {
+      position: "absolute",
+      top: sliderY - 80,
+      paddingHorizontal: 20,
+   },
+   title: {
+      color: primaryColor,
+      fontSize: 20,
+      lineHeight: 25,
+      fontWeight: "bold",
+   },
+   subtitle: {
+      color: primaryColor,
+      fontSize: 16,
+   },
+   durationLabel: {
+      position: "absolute",
+      paddingHorizontal: 24,
+      top: sliderY + 10,
+      fontSize: 12,
+      color: primaryColor,
+   },
    knob: {
       position: "absolute",
       backgroundColor: "#1C0452",
       width: knobSize,
       height: knobSize,
       borderRadius: knobSize / 2,
-      // opacity: 0,
    },
    text: {
       position: "absolute",
