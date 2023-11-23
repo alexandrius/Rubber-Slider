@@ -1,4 +1,4 @@
 import React from "react";
-import Linear from "./AnimatedPath";
+import Root from "./Root";
 
-export default Linear;
+export default Root;

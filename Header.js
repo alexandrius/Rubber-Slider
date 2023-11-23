@@ -1,6 +1,6 @@
 import React from "react";
 import { View, StyleSheet, Image, TouchableOpacity } from "react-native";
-import { getStatusBarHeight } from "react-native-iphone-x-helper";
+import { getTopInset } from "rn-iphone-helper";
 
 export default function Header({ onSettingsPress }) {
    return (
@@ -19,6 +19,6 @@ const styles = StyleSheet.create({
       alignItems: "center",
       paddingHorizontal: 24,
       paddingBottom: 24,
-      paddingTop: 24 + getStatusBarHeight(),
+      paddingTop: 24 + getTopInset(),
    },
 });
